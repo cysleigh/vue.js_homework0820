@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>待辦事項DEMO </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/jquery.toast.css">
+    <style>
+        .modal-header, h4, .close {
+            background-color: #5cb85c;
+            color: white;
+            text-align: center;
+            font-size: 2em;
+        }
+
+        .modal-footer {
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <div class="row">
+
+         <div class="col-sm-4" id="lab" style="margin:0 auto">
+            <h2>待辦事項 {{testOK}}
+                <span class="pull-right">
+                    <button v-on:click="newItemClick" id="newItem" class="btn btn-success btn-sm">
+                        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                    </button>
+                </span>
+            </h2>
+            <table class="table">
+                <thead class="thead-dark">
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">日期</th>
+                        <th scope="col">標題</th>
+                        <th scope="col">內容</th>
+                        <th scope="col">修改</th>
+                        <th scope="col">刪除</th>
+                        <th scope="col">已完成</th>
+                    </tr>
+                </thead>
+                <tbody v-for="itemsItem,index in newsList">
+                    <tr>
+                        <th scope="row">{{index}}</th>
+                        <td>[{{itemsItem.ymd}}]</td>
+                        <td>{{itemsItem.title}}</td>
+                        <td>{{itemsItem.content}}</td>
+                        <td>
+                            <button v-on:click="editItemClick(index)" class="btn btn-info btn-xs editItem"><span class="glyphicon glyphicon-pencil"
+                                    aria-hidden="true"></span>
+                            </button>
+                        </td>
+                        <td>
+                            <button v-on:click="deleteItemClick(index)" class="btn btn-danger btn-xs deleteItem"><span
+                                    class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
+                            </span>
+                        </td>
+                        <td>
+                            <input type="checkbox" name="check" value="1">
+                        </td>
+                    </tr>
+                </tbody>
+                </table>
+
+             <!-- <ul id="latestNews" class="list-group ">
+                <li v-for="itemsItem,index in newsList" class="list-group-item">
+                    {{itemsItem.title}}  [{{itemsItem.ymd}}] [{{itemsItem.content}}]
+                    <span class="pull-right">
+                    <button v-on:click="editItemClick(index)" class="btn btn-info btn-xs editItem"><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
+                    </button>
+                    <button v-on:click="deleteItemClick(index)" class="btn btn-danger btn-xs deleteItem"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
+                    </span>
+                </li>
+            </ul> -->
+            
+        </div>
+    </div>  <!-- end of row -->
+</div> <!-- end of container -->
+
+
+
+
+<!-- 對話盒 -->
+<div id="itemsModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4>新增/修改</h4>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <label for="titleTextBox">
+                            <span class="glyphicon glyphicon-bullhorn"></span>
+                            標題
+                        </label>
+                        <input type="text"
+                               id="titleTextBox" v-model="title"
+                               class="form-control"
+                               placeholder="請輸入標題" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ymdTextBox">
+                            <span class="glyphicon glyphicon-time"></span>
+                            日期
+                        </label>
+                        <input type="text"
+                               id="ymdTextBox" v-model="ymd"
+                               class="form-control"
+                               placeholder="yyyy-mm-dd 例如: 2017-05-20">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="contentTextBox">
+                            <span class="glyphicon glyphicon-pencil"></span>
+                            待辦內容
+                        </label>
+                        <input type="text" 
+                               id="contentTextBox" v-model="content" 
+                               class="form-control" 
+                               placeholder="輸入待辦內容">
+                    </div>
+
+                </form>
+            </div>
+            <div class="modal-footer">
+                    <div class="pull-right">
+                        <button type="button"
+                                id="okButton" v-on:click="okButtonClick"
+                                class="btn btn-success">
+                            <span class="glyphicon glyphicon-ok"></span> 確定
+                        </button>
+                        <button type="button"
+                                id="cancelButton"
+                                class="btn btn-default"
+                                data-dismiss="modal">
+                            <span class="glyphicon glyphicon-remove"></span> 取消
+                        </button>
+                    </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /對話盒 -->
+
+
+<!-- ========== UI 與 JavaScript 分隔線 ========== -->
+
+
+<script src="js/jquery.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script type="text/javascript" src="js/jquery.toast.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script>
+var itemsModalApp = new Vue({
+    el:"#itemsModal",
+    data: {
+        currentIndex: 0,
+        title : "",
+        ymd : "",
+        content :"",
+        checkbox:""
+    },
+    methods: {
+        okButtonClick: function(){
+            if(this.currentIndex < 0){  //新增
+                var itemsItem = {
+                    title: this.title, 
+                    ymd: this.ymd,
+                    content: this.content,
+                    checkbox :this.checkbox 
+                }
+                $.ajax({
+                    type:"post",
+                    url: "/home/items",
+                    data: itemsItem,
+                    success: function(e){
+                        alert(e);
+                    }
+                })
+                appItems.newsList.push(itemsItem);
+            }
+            else{
+                //修改
+                appItems.newsList[this.currentIndex].title = this.title;
+                appItems.newsList[this.currentIndex].ymd = this.ymd;
+                appItems.newsList[this.currentIndex].content = this.content;
+                $.ajax({
+                    type: "put",
+                    url: "/home/items",
+                    data: appItems.newsList[this.currentIndex]
+                }).then(function (e) {
+                    downloadFromServer();
+                })  
+            }
+            $("#itemsModal").modal("hide");
+        }
+    }
+});
+
+// 使用方式:
+// showToast("標題", "提示文字") 例如:
+// showToast("Hint", "請點一下正確的圖案");
+var appItems = new Vue({
+    el:"#lab",
+    data:{
+        testOK:" DEMO",
+        newsList:[
+            { ymd: "2017-05-01", title: "Item s", content:"test" },
+            { ymd: "2017-05-01", title: "Item l", content: "test" },
+            { ymd: "2017-05-02", title: "Item e", content: "test" },
+            { ymd: "2017-05-03", title: "Item i", content: "test" },
+            { ymd: "2017-05-04", title: "Item g", content: "test" },
+            { ymd: "2017-05-04", title: "Item h", content: "test" },
+            { ymd: "2017-05-04", title: "Item t", content: "test" }
+        ]
+    },
+    methods: {
+        newItemClick:function(){
+            itemsModalApp.currentIndex=-1,
+            itemsModalApp.title="";
+            itemsModalApp.ymd="";
+            itemsModalApp.content= "";
+          $("#itemsModal").modal({backdrop: "static"});
+        },
+        editItemClick:function(idx){
+            itemsModalApp.currentIndex = idx,
+            itemsModalApp.title = this.newsList[idx].title;
+            itemsModalApp.ymd = this.newsList[idx].ymd;
+            itemsModalApp.content = this.newsList[idx].content;
+            itemsModalApp.checkbox = this.newsList[idx].checkbox;
+            $("#itemsModal").modal({ backdrop: "static" });
+        },
+
+        deleteItemClick:function(idx){
+            $.ajax({
+                type: "delete",
+                url: "/home/items",
+                data: this.newsList[idx],
+                success: function (e) {
+                    alert(e);
+                }
+            })
+            this.newsList.splice(idx, 1); //刪除語法(splice)
+            downloadFromServer();
+        }
+    }
+})
+function downloadFromServer(){
+    $.ajax({
+        type: "get",
+        url: "/home/items",
+    }).then(function (dataFromserver) {
+        appItems.newsList = JSON.parse(dataFromserver);
+    }) 
+}
+
+$(document).ready(function() {
+    downloadFromServer();
+})
+
+</script>
+
+</body>
+</html>

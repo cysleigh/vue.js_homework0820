@@ -1,0 +1,8 @@
+﻿建立代辦事項資料庫
+
+//itemId、ymd、title、content
+
+CREATE TABLE `vuejshomework0820`.`items` ( `itemId` INT(11) NOT NULL AUTO_INCREMENT , `ymd` CHAR(10) NOT NULL , `title` VARCHAR(50) NOT NULL , `content` VARCHAR(1000) NOT NULL , PRIMARY KEY (`itemId`)) ENGINE = InnoDB;
+
+//新增已完成欄位
+ALTER TABLE `items` ADD `checkbox` CHAR(10) NOT NULL DEFAULT 'unchecked' AFTER `content`;
